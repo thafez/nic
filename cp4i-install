@@ -1,0 +1,206 @@
+# OCS installation
+
+https://access.redhat.com/documentation/en-us/red_hat_openshift_container_storage/4.8/html-single/deploying_openshift_container_storage_on_vmware_vsphere/index#creating-an-openshift-container-storage-service_cloud-storage
+
+3.4. Creating OpenShift Container Storage cluster on VMware
+
+**************************************************************************************************************************************************************************************
+
+
+# CP4I Overview
+
+Installation
+https://www.ibm.com/docs/en/cloud-paks/cp-integration/2021.4?topic=installing
+
+Mirror Images
+Adding catalog sources to air gapped environment
+Add CatalogSource 
+Install Common services
+IBM operators
+Apply the key 
+deploy cloud pak for Integration
+deploy instances of capabilities 
+
+# CP4I
+Planning 
+https://www.ibm.com/docs/en/cloud-paks/cp-integration/2021.4?topic=requirements-operating-environment
+
+https://www.ibm.com/docs/en/cloud-paks/cp-integration/2021.4?topic=cluster-adding-catalog-sources-bastion-host
+
+
+# Peparation
+# download cloudctl
+    https://github.com/IBM/cloud-pak-cli/releases/latest/download/cloudctl-linux-amd64.tar.gz
+    
+# Download CP4I and inventory
+cloudctl case save \
+  --repo $CASE_REPO_PATH \
+  --case $CASE_NAME \
+  --version $CASE_VERSION \
+  --outputdir $OFFLINEDIR
+
+# Mirror Images
+# IBM Cloud Pak for Integration, which deploys the Platform UI
+export CASE_NAME=ibm-integration-platform-navigator
+export CASE_VERSION=1.6.0
+export CASE_ARCHIVE=${CASE_NAME}-${CASE_VERSION}.tgz
+export CASE_INVENTORY_SETUP=platformNavigatorOperator
+
+# IBM Cloud Pak for Integration Operations Dashboard (integration tracing capability)
+export CASE_NAME=ibm-integration-operations-dashboard
+export CASE_VERSION=2.5.4
+export CASE_ARCHIVE=${CASE_NAME}-${CASE_VERSION}.tgz
+export CASE_INVENTORY_SETUP=ibmIntegrationOperationsDashboardSetup
+
+# IBM Automation assets
+export CASE_NAME=ibm-integration-asset-repository
+export CASE_VERSION=1.4.4
+export CASE_ARCHIVE=${CASE_NAME}-${CASE_VERSION}.tgz
+export CASE_INVENTORY_SETUP=assetRepositoryOperator
+
+# IBM API Connect (API management and event endpoint management capabilities)
+export CASE_NAME=ibm-apiconnect
+export CASE_VERSION=3.0.6
+export CASE_ARCHIVE=${CASE_NAME}-${CASE_VERSION}.tgz
+export CASE_INVENTORY_SETUP=apiconnectOperatorSetup
+
+# IBM App Connect (integration design and integration dashboard capabilities)
+export CASE_NAME=ibm-appconnect
+export CASE_VERSION=4.0.0
+export CASE_ARCHIVE=${CASE_NAME}-${CASE_VERSION}.tgz
+export CASE_INVENTORY_SETUP=ibmAppconnect
+
+# IBM Datapower Gateway (enterprise gateway runtime)
+export CASE_NAME=ibm-datapower-operator
+export CASE_VERSION=1.5.2
+export CASE_ARCHIVE=${CASE_NAME}-${CASE_VERSION}.tgz
+export CASE_INVENTORY_SETUP=datapowerOperator
+
+# IBM Event Streams
+export CASE_NAME=ibm-eventstreams
+export CASE_VERSION=1.5.3
+export CASE_ARCHIVE=${CASE_NAME}-${CASE_VERSION}.tgz
+export CASE_INVENTORY_SETUP=ibmEventstreamsOperatorInstall
+
+# IBM MQ (messaging runtime)
+export CASE_NAME=ibm-mq
+export CASE_VERSION=1.8.0
+export CASE_ARCHIVE=${CASE_NAME}-${CASE_VERSION}.tgz
+export CASE_INVENTORY_SETUP=ibmMQOperator
+
+
+# Mirror the images to the host
+cloudctl case launch \
+  --case data/ocp4i/$CASE_ARCHIVE \
+  --inventory $CASE_INVENTORY_SETUP \
+  --action configure-creds-airgap \
+  --args "--registry rocpemrr01.nic.moi.gov --user adminuser --pass Nic@1qaz2wsx"
+
+# provide entitlement key
+cloudctl case launch \
+  --case data/ocp4i/$CASE_ARCHIVE \
+  --inventory $CASE_INVENTORY_SETUP \
+  --action configure-creds-airgap \
+  --args "--registry cp.icr.io --user cp --pass <insert_your_entitlement_key>"
+
+  # create cp4i namespace
+
+  oc login registry "check login command in user"api.rocpapi.nichq.moi.gov:6443 --username=admin --password=Nic@1qaz2wsx
+
+  export NAMESPACE=cp4i
+
+  oc create namespace $NAMESPACE
+
+  # Mirror Images to final location and configure cluster 
+
+export CASE_NAME=ibm-integration-platform-navigator
+export CASE_VERSION=1.6.0
+export CASE_ARCHIVE=${CASE_NAME}-${CASE_VERSION}.tgz
+export CASE_INVENTORY_SETUP=platformNavigatorOperator
+
+    # Create environment variables with the local registry connection information:
+
+    export CASE_NAME=ibm-integration-platform-navigator
+    export CASE_VERSION=1.6.0
+    export CASE_ARCHIVE=${CASE_NAME}-${CASE_VERSION}.tgz
+    export CASE_INVENTORY_SETUP=platformNavigatorOperator
+    export OFFLINEDIR=/data/ocp4i
+    export OFFLINEDIR_ARCHIVE=offline.tgz
+    export CASE_REPO_PATH=https://github.com/IBM/cloud-pak/raw/master/repo/case
+    export LOCAL_DOCKER_REGISTRY_HOST=rocpemrr01.nic.moi.gov
+    export LOCAL_DOCKER_REGISTRY_PORT=5000
+    export LOCAL_DOCKER_REGISTRY=$LOCAL_DOCKER_REGISTRY_HOST:$LOCAL_DOCKER_REGISTRY_PORT
+    export LOCAL_DOCKER_USER=adminuser
+    export LOCAL_DOCKER_PASSWORD=Nic@1qaz2wsx
+
+    # Create authentication secret
+
+    cloudctl case launch \
+    --case data/cp4i/$CASE_ARCHIVE \
+    --inventory $CASE_INVENTORY_SETUP \
+    --action configure-creds-airgap \
+    --args "--registry $LOCAL_DOCKER_REGISTRY --user $LOCAL_DOCKER_USER --pass $LOCAL_DOCKER_PASSWORD"
+
+    # Mirror to local image registry 
+
+    cloudctl case launch \
+    --case $OFFLINEDIR/$CASE_ARCHIVE \
+    --inventory $CASE_INVENTORY_SETUP \
+    --action mirror-images \
+    --args "--registry $LOCAL_DOCKER_REGISTRY --inputDir $OFFLINEDIR"
+
+    # Configure Global Image pull secret and ImageContentSource Policy (verify if this can overwrite OCP)
+
+    cloudctl case launch \
+    --case /data/cp4i/$CASE_ARCHIVE \
+    --inventory $CASE_INVENTORY_SETUP \
+    --action configure-cluster-airgap \
+    --namespace $NAMESPACE \
+    --args "--registry $LOCAL_DOCKER_REGISTRY --user $LOCAL_DOCKER_USER --pass $LOCAL_DOCKER_PASSWORD --inputDir $OFFLINEDIR"
+
+    # verify resource is created 
+    oc get imageContentSourcePolicy 
+
+    oc get nodes
+    # it may take time to be ready
+
+
+# Create the catalog source
+export NAMESPACE=cp4i
+
+cloudctl case launch \
+  --case /data/cp4i/${CASE_ARCHIVE} \
+  --inventory ${CASE_INVENTORY_SETUP} \
+  --action install-catalog \
+  --namespace ${NAMESPACE} \
+  --args "--registry ${LOCAL_DOCKER_REGISTRY} --inputDir /data/cp4i --recursive"
+
+
+# verify Catalog Source
+oc get pods -n openshift-marketplace
+oc get catalogsource -n openshift-marketplace
+
+
+
+
+
+
+
+
+
+
+
+
+# Overview
+
+Installation
+https://www.ibm.com/docs/en/cloud-paks/cp-integration/2021.4?topic=installing
+
+Mirror Images
+Adding catalog sources to air gapped environment
+Add CatalogSource 
+Install Common services
+IBM operators
+Apply the key 
+deploy cloud pak for Integration
+deploy instances of capabilities 
