@@ -6,6 +6,19 @@ https://access.redhat.com/documentation/en-us/red_hat_openshift_container_storag
 
 **************************************************************************************************************************************************************************************
 
+# Overview
+
+Installation
+https://www.ibm.com/docs/en/cloud-paks/cp-integration/2021.4?topic=installing
+
+Mirror Images
+Adding catalog sources to air gapped environment
+Add CatalogSource 
+Install Common services
+IBM operators
+Apply the key 
+deploy cloud pak for Integration
+deploy instances of capabilities 
 
 # CP4I Overview
 
@@ -192,6 +205,20 @@ oc get catalogsource -n openshift-marketplace
 
 
 
+Troubleshooting
+https://www.ibm.com/support/pages/node/6509238
+
+problem:If the cloudctl case commands fail after November 4th, 2021, and if the failure is related to signature validation
+Solution
+Run the cloudctl case launch command with the --tolerance 1 flag set to ignore the signature validation error
+
+Or:
+
+Refresh the offline cache data, which is the output of the cloudctl case save command, with the CASEs that renewed the public certificate information.   
+
+The following command can be used to refresh a specific CASE version with updated certificate data:
+
+% cloudctl case save -c "https://github.com/IBM/cloud-pak/raw/master/repo/case/<CASE name to save>/<version of CASE in offline cache>/<CASE name to save>-<version of CASE in offline cache>.tgz" -o <new offline cache> --no-dependency
 
 
 
@@ -200,16 +227,4 @@ oc get catalogsource -n openshift-marketplace
 
 
 
-# Overview
 
-Installation
-https://www.ibm.com/docs/en/cloud-paks/cp-integration/2021.4?topic=installing
-
-Mirror Images
-Adding catalog sources to air gapped environment
-Add CatalogSource 
-Install Common services
-IBM operators
-Apply the key 
-deploy cloud pak for Integration
-deploy instances of capabilities 
