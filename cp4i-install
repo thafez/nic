@@ -31,6 +31,15 @@ https://www.ibm.com/docs/en/cloud-paks/cp-integration/2021.4?topic=cluster-addin
 # Peparation
 # download cloudctl
     https://github.com/IBM/cloud-pak-cli/releases/latest/download/cloudctl-linux-amd64.tar.gz
+
+# Environment Variables for download
+
+export CASE_NAME=ibm-integration-platform-navigator
+export CASE_VERSION=1.6.0
+export CASE_ARCHIVE=${CASE_NAME}-${CASE_VERSION}.tgz
+export CASE_INVENTORY_SETUP=platformNavigatorOperator
+export OFFLINEDIR=$HOME/offline
+export CASE_REPO_PATH=https://github.com/IBM/cloud-pak/raw/master/repo/case
     
 # Download CP4I and inventory
 cloudctl case save \
