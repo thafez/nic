@@ -208,7 +208,7 @@ oc get catalogsource -n openshift-marketplace
 Troubleshooting
 https://www.ibm.com/support/pages/node/6509238
 
-problem:If the cloudctl case commands fail after November 4th, 2021, and if the failure is related to signature validation
+#1 Problem:If the cloudctl case commands fail after November 4th, 2021, and if the failure is related to signature validation
 Solution
 Run the cloudctl case launch command with the --tolerance 1 flag set to ignore the signature validation error
 
@@ -219,6 +219,17 @@ Refresh the offline cache data, which is the output of the cloudctl case save co
 The following command can be used to refresh a specific CASE version with updated certificate data:
 
 % cloudctl case save -c "https://github.com/IBM/cloud-pak/raw/master/repo/case/<CASE name to save>/<version of CASE in offline cache>/<CASE name to save>-<version of CASE in offline cache>.tgz" -o <new offline cache> --no-dependency
+
+#2 Kubernetes/OpenShift CASE Installation (air gap configuration) Digital Signature Validation Failure Prevention
+https://www.ibm.com/support/pages/node/6509564
+
+(Option 1) Resave each CASE to a new offline cache
+export case_name=ibm-apiconnect
+export case_version=3.0.1 
+
+cloudctl case save -c "https://github.com/IBM/cloud-pak/raw/master/repo/case/${case_name}/${case_version}/${case_name}-${case_version}.tgz" -o ${new_offline_cache} --no-dependency
+ or
+ cloudctl case save -c "https://github.com/IBM/cloud-pak/raw/master/repo/case/ibm-apiconnect/3.0.1/ibm-apiconnect-3.0.1.tgz" -o tmp-offline-cache --no-dependency
 
 
 
