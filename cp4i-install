@@ -5,6 +5,7 @@ https://access.redhat.com/documentation/en-us/red_hat_openshift_container_storag
 3.4. Creating OpenShift Container Storage cluster on VMware
 
 **************************************************************************************************************************************************************************************
+Cloud Pak for Integration
 
 # Overview
 
@@ -229,7 +230,7 @@ export case_version=3.0.1
 
 cloudctl case save -c "https://github.com/IBM/cloud-pak/raw/master/repo/case/${case_name}/${case_version}/${case_name}-${case_version}.tgz" -o ${new_offline_cache} --no-dependency
  or
- cloudctl case save -c "https://github.com/IBM/cloud-pak/raw/master/repo/case/ibm-apiconnect/3.0.1/ibm-apiconnect-3.0.1.tgz" -o tmp-offline-cache --no-dependency
+cloudctl case save -c "https://github.com/IBM/cloud-pak/raw/master/repo/case/ibm-apiconnect/3.0.1/ibm-apiconnect-3.0.1.tgz" -o tmp-offline-cache --no-dependency
 
 
 
